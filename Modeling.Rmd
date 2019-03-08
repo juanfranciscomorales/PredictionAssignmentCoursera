@@ -1,0 +1,211 @@
+---
+title: "Prediction Assignment"
+author: "Juan Francisco Morales"
+date: "March 8, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE ,cache = TRUE)
+```
+
+## Background
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
+
+## Goal
+
+The goal of the project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set.
+
+## Reading, exploring and cleaning the data
+
+This part is for setting the data for modeling purposes.
+
+```{r }
+
+library(data.table)
+
+library(caret)
+
+url.train <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv" 
+
+url.test <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+
+training <- as.data.frame(fread( url.train , na.strings = c("NA" , "#DIV/0!") ))
+
+str(training)
+
+colnames(training)
+
+training <- training[,-c(1:7)] # Drop features that I will not use
+
+training <- training[ , apply(training, 2, function(x) !any(is.na(x)))] ### Drop columns with NA
+
+training$classe <- as.factor(make.names(training$classe)) 
+
+test <- as.data.frame(fread(url.test, na.strings = c("NA" , "#DIV/0!") ))
+
+```
+
+## Parallelization setting
+
+I do parallelization in order to make the model development faster.
+
+```{r }
+
+library(parallel) 
+
+library(doParallel) 
+
+set.seed(1)
+
+
+cores <- detectCores() 
+
+cls = makeCluster(cores) 
+
+registerDoParallel(cls) 
+
+seeds <- vector(mode = "list", length = 1000) 
+
+for(i in 1:length(seeds)) seeds[[i]] <- sample.int(1000, 1000) 
+
+
+```
+
+
+## Cross-validation setting
+
+For model optimization I use K-fold cross validation with K = 10.
+
+```{r }
+
+
+ctrl <- trainControl(method="cv", 
+                     
+                     allowParallel = TRUE, 
+                     
+                     seeds = seeds, 
+                     
+                     verboseIter = FALSE , 
+                     
+                     number = 10 , 
+                     
+                     classProbs=TRUE  
+                     
+)
+
+
+```
+
+
+
+## Grid search setting
+
+I set the model parameters to be optimize.
+
+```{r }
+
+
+
+gbmGrid <-  expand.grid(
+  
+  interaction.depth = 3 , 
+  
+  n.trees = seq(from = 500 , to = 3000 , by = 500), 
+  
+  shrinkage = 0.1 , 
+  
+  n.minobsinnode = 10 ) 
+
+
+
+
+```
+
+
+## Model training and optimization
+
+Training and optimization model procedure itself
+
+```{r }
+
+
+
+gbmfit <- train(classe ~ ., 
+                
+                data = training, 
+                
+                method = "gbm", 
+                
+                trControl = ctrl,  
+                
+                tuneGrid = gbmGrid,  
+                
+                verbose = FALSE
+) 
+
+
+stopCluster(cls) 
+
+
+```
+
+## Final model and optimization results
+
+The final model is printed and the optimization results are plotted.
+
+```{r }
+
+
+gbmfit 
+
+plot(gbmfit) 
+
+
+
+```
+
+
+
+## Results in the training set
+
+The accuracy in the training set is printed.
+
+```{r }
+
+
+train.pred <- predict(gbmfit, newdata = training , na.action = na.pass) 
+
+confusionMatrix(data =  train.pred , reference = training$classe )
+
+
+
+```
+
+## Expected out of sample error
+
+The expected out of sample accuracy is printed. I based on the K-fold cross validation results.
+
+```{r }
+
+
+getTrainPerf(gbmfit) 
+
+
+```
+
+## Predictions in the test set
+
+Predictions in the test set are printed.
+
+```{r }
+
+
+test.pred <- predict(gbmfit, newdata = test, na.action = na.pass)  
+
+cbind(problem_id = test$problem_id ,model_prediction =  test.pred)
+
+
+
+```
