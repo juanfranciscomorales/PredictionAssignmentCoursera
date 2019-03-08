@@ -2,7 +2,9 @@
 title: "Prediction Assignment"
 author: "Juan Francisco Morales"
 date: "March 8, 2019"
-output: html_document
+output:
+  html_document:
+    keep_md: yes 
 ---
 
 ```{r setup, include=FALSE}
@@ -204,7 +206,7 @@ Predictions in the test set are printed.
 
 test.pred <- predict(gbmfit, newdata = test, na.action = na.pass)  
 
-cbind(problem_id = test$problem_id ,model_prediction =  test.pred)
+cbind(problem_id = test$problem_id ,model_prediction =  as.character(test.pred))
 
 
 
