@@ -390,9 +390,10 @@ $(document).ready(function () {
 <p>This part is for setting the data for modeling purposes.</p>
 <pre class="r"><code>library(data.table)
 
-library(caret)
-
-url.train &lt;- &quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot; 
+library(caret)</code></pre>
+<pre><code>## Loading required package: lattice</code></pre>
+<pre><code>## Loading required package: ggplot2</code></pre>
+<pre class="r"><code>url.train &lt;- &quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot; 
 
 url.test &lt;- &quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;
 
@@ -594,9 +595,10 @@ test &lt;- as.data.frame(fread(url.test, na.strings = c(&quot;NA&quot; , &quot;#
 <p>I do parallelization in order to make the model development faster.</p>
 <pre class="r"><code>library(parallel) 
 
-library(doParallel) 
-
-set.seed(1)
+library(doParallel) </code></pre>
+<pre><code>## Loading required package: foreach</code></pre>
+<pre><code>## Loading required package: iterators</code></pre>
+<pre class="r"><code>set.seed(1)
 
 
 cores &lt;- detectCores() 

@@ -26,7 +26,17 @@ This part is for setting the data for modeling purposes.
 library(data.table)
 
 library(caret)
+```
 
+```
+## Loading required package: lattice
+```
+
+```
+## Loading required package: ggplot2
+```
+
+```r
 url.train <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv" 
 
 url.test <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
@@ -246,7 +256,17 @@ I do parallelization in order to make the model development faster.
 library(parallel) 
 
 library(doParallel) 
+```
 
+```
+## Loading required package: foreach
+```
+
+```
+## Loading required package: iterators
+```
+
+```r
 set.seed(1)
 
 
